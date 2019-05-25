@@ -54,6 +54,7 @@ public class EventConsumer implements InitializingBean, ApplicationContextAware 
                             System.out.println("不能识别的事件");
                             continue;
                         }
+
                         for(EventHandler handler:config.get(eventModel.getEventType())) {
                             handler.doHandle(eventModel);
                         }
