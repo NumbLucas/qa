@@ -1,9 +1,15 @@
 package com.numbguy.qa.controller;
 
 import com.numbguy.qa.QAUtil.JSON;
+import com.numbguy.qa.async.EventModel;
+import com.numbguy.qa.async.EventProducer;
+import com.numbguy.qa.async.EventType;
+import com.numbguy.qa.model.Comment;
 import com.numbguy.qa.model.EntityType;
 import com.numbguy.qa.model.HostHolder;
+import com.numbguy.qa.service.CommentService;
 import com.numbguy.qa.service.LikeService;
+import com.numbguy.qa.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +25,15 @@ public class LikeController {
     @Autowired
     private HostHolder hostHolder;
 
+    @Autowired
+    EventProducer eventProducer;
+
+    @Autowired
+    QuestionService questionService;
+
+    @Autowired
+    CommentService commentService;
+
     @RequestMapping(path = {"/like"}, method = {RequestMethod.POST})
     @ResponseBody
     public String like(@RequestParam("commentId") int commentId) {
@@ -27,6 +42,12 @@ public class LikeController {
         }
 
         long likeCount = likeService.like(hostHolder.getUser().getId(), EntityType.ENTITY_QUESTION, commentId);
+        Comment comment = commentService.getCommentById(commentId);
+        EventModel eventModel = new EventModel(EventType.LIKE).setActorId(hostHolder.getUser().getId()).
+                setEntityType(EntityType.ENTITY_COMMENT).setEntityId(commentId).
+                setExt("questionId", String.valueOf(comment.getEntityId()))
+                .setEntityOwner(comment.getUserId());
+        eventProducer.fireEvent(eventModel);
         return JSON.getJSONString(0, String.valueOf(likeCount));
     }
 
