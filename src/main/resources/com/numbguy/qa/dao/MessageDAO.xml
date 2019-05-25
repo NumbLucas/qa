@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+        <!--@Select({"select ", INSERT_FIELD_GROUP, ", count(id) as id from ( select * from ", TABLE_NAME,-->
+        <!--"where from_id=#{userId} or to_id=#{userId} order by created_date desc) tt group by conversation_id order by ANY_VALUE(created_date) desc limit #{offset},#{limit}"})-->
+<mapper namespace="com.numbguy.qa.dao.MessageDAO">
+    <sql id="table">message</sql>
+    <sql id="selectField">from_id as fromID, to_id as toId, content as content, created_date as createdDate, has_read as hasRead, conversation_id as conversationId</sql>
+    <sql id="selectFieldGroup">(ANY_VALUE(from_id)) as fromID, (ANY_VALUE(to_id)) as toId, (ANY_VALUE(content)) as content, (ANY_VALUE(created_date)) as createdDate, (ANY_VALUE(has_read)) as hasRead, (ANY_VALUE(conversation_id)) as conversationId, count(id) as id</sql>
+    <!--<select id="test">-->
+        <!--SELECT-->
+        <!--<include refid="selectField"/>-->
+        <!--FROM-->
+        <!--message-->
+        <!--WHERE from_id=#{userId} or to_id=#{userId} order by created_date desc-->
+    <!--</select>-->
+    <resultMap id="messageMap" type="com.numbguy.qa.model.Message">
+        <result property="id" column="id"></result>
+        <result property="fromId" column="from_id"></result>
+        <result property="toId" column="to_id"></result>
+        <result property="content" column="content"></result>
+        <result property="hasRead" column="has_read"></result>
+        <result property="createdDate" column="created_date"></result>
+        <result property="conversationId" column="conversation_id"></result>
+    </resultMap>
+    <select id="getConversationList" resultType="com.numbguy.qa.model.Message">
+        SELECT
+        <include refid="selectFieldGroup"/>
+        FROM
+        <!--<include refid="test" />-->
+        (SELECT * FROM message where from_id=#{userId} or to_id=#{userId} order by created_date desc) as tt
+        group by conversation_id
+        ORDER BY ANY_VALUE(created_date) DESC
+        LIMIT #{offset},#{limit}
+    </select>
+</mapper>

@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en"  xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>QA</title>
+</head>
+<body>
+    <p>test</p>
+    <div th:each="vo : ${vos}">
+        <p th:text="${vo.get('question').title}"></p>
+    </div>
+</body>
+</html>
